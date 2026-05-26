@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,7 @@ from uneemi_ml.config import EMBED_DIM, ONNX_VISION_PATH, ORT_INTRA_OP_THREADS
 from uneemi_ml.preprocess import preprocess_batch, preprocess_image
 
 _INPUT_NAME: str = "pixel_values"
+_LOGGER = logging.getLogger(__name__)
 
 
 class Siglip2Encoder:
@@ -33,6 +35,7 @@ class Siglip2Encoder:
             )
 
         threads = intra_op_threads if intra_op_threads is not None else ORT_INTRA_OP_THREADS
+        _LOGGER.info("Siglip2Encoder: intra_op_num_threads=%d", threads)
 
         options = ort.SessionOptions()
         options.intra_op_num_threads = threads
