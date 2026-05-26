@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+wheels/
+.pytest_cache/
+.ruff_cache/
+
+# Virtualenv / uv
+.venv/
+.python-version.local
+
+# ML artifacts
+*.onnx
+models/
+data/
+
+# HuggingFace cache (если кешируется в корне)
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
