@@ -18,6 +18,7 @@ docs/benchmark_results.md (история прогонов сохраняетс�
 
 from __future__ import annotations
 
+import argparse
 import gc
 import os
 import platform
@@ -255,6 +256,8 @@ def format_markdown(
     encode_single: dict[str, float],
     encode_batches: dict[int, dict[str, float]],
     board: dict[str, float],
+    effective_threads: int,
+    threads_source: str,
 ) -> str:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     host = (
@@ -313,7 +316,7 @@ def format_markdown(
         f"**Host:** {host}",
         f"**Python:** {system_info['python']} | "
         f"**onnxruntime:** {system_info['onnxruntime']} | "
-        f"**ORT threads:** {system_info['ort_threads']}",
+        f"**ORT threads:** {effective_threads} ({threads_source})",
         f"**RAM после init Siglip2Encoder:** {ram_after_init_mb:.1f} MB",
         "",
         "### Латентность",
@@ -356,6 +359,15 @@ def _print_kv(key: str, value: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Performance benchmark Siglip2Encoder")
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=None,
+        help="Override ORT intra_op_num_threads. Default: config.ORT_INTRA_OP_THREADS",
+    )
+    args = parser.parse_args()
+
     system_info = get_system_info()
     commit = _git_commit_hash()
 
@@ -371,11 +383,14 @@ def main() -> int:
     print("Инициализация Siglip2Encoder...")
     gc.collect()
     rss_before = _rss_mb()
-    encoder = Siglip2Encoder()
+    encoder = Siglip2Encoder(intra_op_threads=args.threads)
     gc.collect()
     rss_after = _rss_mb()
     ram_after_init = rss_after - rss_before
+    effective_threads = encoder.intra_op_threads
+    threads_source = "cli" if args.threads is not None else "config"
     print(f"  RAM после init: {rss_after:.1f} MB (delta {ram_after_init:+.1f} MB)")
+    print(f"  ORT intra_op_num_threads = {effective_threads} ({threads_source})")
     print()
 
     print(
@@ -466,6 +481,8 @@ def main() -> int:
         encode_single=encode_single,
         encode_batches=encode_batches,
         board=board,
+        effective_threads=effective_threads,
+        threads_source=threads_source,
     )
     append_to_results_file(RESULTS_PATH, section)
     print(f"\nРезультаты дописаны в {RESULTS_PATH}")

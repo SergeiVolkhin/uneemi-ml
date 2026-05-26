@@ -33,3 +33,99 @@
 - [❌] p99 encode(single) ≤ 30 мс (фактическое: 92.02 мс)
 - [❌] p99 encode_batch(32) ≤ 500 мс (фактическое: 2715.01 мс)
 - [x] ram_peak_bs32 ≤ 2048 MB (фактическое: 1256.1 MB)
+
+---
+
+## Прогон 2026-05-26 20:14:45
+
+**Commit:** `ea13908`
+**Host:** Windows 10, Intel64 Family 6 Model 151 Stepping 2, GenuineIntel (12C/20T), 31.9 GB RAM
+**Python:** 3.11.9 | **onnxruntime:** 1.26.0 | **ORT threads:** 8 (cli)
+**RAM после init Siglip2Encoder:** 417.6 MB
+
+### Латентность
+
+| Операция | p50 (мс) | p95 (мс) | p99 (мс) | per_img (мс) | ram_peak_mb |
+|---|---|---|---|---|---|
+| preprocess (PIL+normalize) | 2.73 | 3.13 | 3.28 | — | — |
+| encode(single) | 52.03 | 56.40 | 60.94 | — | 543.2 |
+| encode_batch(1) | 52.06 | 56.62 | 59.72 | 52.06 | 543.2 |
+| encode_batch(8) | 506.51 | 533.70 | 535.98 | 63.31 | 702.7 |
+| encode_batch(16) | 1028.51 | 1088.65 | 1136.47 | 64.28 | 886.5 |
+| encode_batch(32) | 2102.45 | 2186.01 | 2339.11 | 65.70 | 1254.2 |
+
+### Full board pipeline (40 изображений, чанки 32+8)
+
+- t_preprocess: 115.88 мс
+- t_encode: 2420.79 мс
+- **t_total: 2554.11 мс**
+
+### Таргеты
+
+- [❌] p99 encode(single) ≤ 30 мс (фактическое: 60.94 мс)
+- [❌] p99 encode_batch(32) ≤ 500 мс (фактическое: 2339.11 мс)
+- [x] ram_peak_bs32 ≤ 2048 MB (фактическое: 1254.2 MB)
+
+---
+
+## Прогон 2026-05-26 20:18:29
+
+**Commit:** `ea13908`
+**Host:** Windows 10, Intel64 Family 6 Model 151 Stepping 2, GenuineIntel (12C/20T), 31.9 GB RAM
+**Python:** 3.11.9 | **onnxruntime:** 1.26.0 | **ORT threads:** 12 (cli)
+**RAM после init Siglip2Encoder:** 418.6 MB
+
+### Латентность
+
+| Операция | p50 (мс) | p95 (мс) | p99 (мс) | per_img (мс) | ram_peak_mb |
+|---|---|---|---|---|---|
+| preprocess (PIL+normalize) | 2.55 | 3.08 | 3.55 | — | — |
+| encode(single) | 46.95 | 49.95 | 54.75 | — | 544.5 |
+| encode_batch(1) | 46.97 | 49.09 | 49.95 | 46.97 | 544.5 |
+| encode_batch(8) | 395.57 | 406.02 | 411.17 | 49.45 | 703.9 |
+| encode_batch(16) | 796.30 | 810.20 | 815.72 | 49.77 | 887.8 |
+| encode_batch(32) | 1645.47 | 1660.02 | 1663.84 | 51.42 | 1255.5 |
+
+### Full board pipeline (40 изображений, чанки 32+8)
+
+- t_preprocess: 121.74 мс
+- t_encode: 1954.11 мс
+- **t_total: 2061.56 мс**
+
+### Таргеты
+
+- [❌] p99 encode(single) ≤ 30 мс (фактическое: 54.75 мс)
+- [❌] p99 encode_batch(32) ≤ 500 мс (фактическое: 1663.84 мс)
+- [x] ram_peak_bs32 ≤ 2048 MB (фактическое: 1255.5 MB)
+
+---
+
+## Прогон 2026-05-26 20:21:36
+
+**Commit:** `ea13908`
+**Host:** Windows 10, Intel64 Family 6 Model 151 Stepping 2, GenuineIntel (12C/20T), 31.9 GB RAM
+**Python:** 3.11.9 | **onnxruntime:** 1.26.0 | **ORT threads:** 16 (cli)
+**RAM после init Siglip2Encoder:** 418.7 MB
+
+### Латентность
+
+| Операция | p50 (мс) | p95 (мс) | p99 (мс) | per_img (мс) | ram_peak_mb |
+|---|---|---|---|---|---|
+| preprocess (PIL+normalize) | 2.52 | 2.90 | 3.09 | — | — |
+| encode(single) | 46.68 | 48.31 | 50.75 | — | 544.9 |
+| encode_batch(1) | 46.70 | 47.80 | 48.12 | 46.70 | 546.0 |
+| encode_batch(8) | 380.71 | 388.87 | 389.81 | 47.59 | 704.3 |
+| encode_batch(16) | 819.37 | 848.54 | 861.17 | 51.21 | 888.2 |
+| encode_batch(32) | 1678.70 | 1716.50 | 1737.59 | 52.46 | 1255.9 |
+
+### Full board pipeline (40 изображений, чанки 32+8)
+
+- t_preprocess: 141.89 мс
+- t_encode: 1937.22 мс
+- **t_total: 2075.59 мс**
+
+### Таргеты
+
+- [❌] p99 encode(single) ≤ 30 мс (фактическое: 50.75 мс)
+- [❌] p99 encode_batch(32) ≤ 500 мс (фактическое: 1737.59 мс)
+- [x] ram_peak_bs32 ≤ 2048 MB (фактическое: 1255.9 MB)

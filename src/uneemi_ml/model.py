@@ -20,7 +20,11 @@ class Siglip2Encoder:
     Возвращает `pooler_output` формы (B, EMBED_DIM) в float32.
     """
 
-    def __init__(self, onnx_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        onnx_path: Path | None = None,
+        intra_op_threads: int | None = None,
+    ) -> None:
         path = Path(onnx_path) if onnx_path is not None else ONNX_VISION_PATH
         if not path.exists():
             raise FileNotFoundError(
@@ -28,8 +32,10 @@ class Siglip2Encoder:
                 "Сначала запустите экспорт: `uv run python scripts/export_onnx.py`."
             )
 
+        threads = intra_op_threads if intra_op_threads is not None else ORT_INTRA_OP_THREADS
+
         options = ort.SessionOptions()
-        options.intra_op_num_threads = ORT_INTRA_OP_THREADS
+        options.intra_op_num_threads = threads
         options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
         self._session = ort.InferenceSession(
@@ -39,10 +45,15 @@ class Siglip2Encoder:
         )
         self._output_name = self._session.get_outputs()[0].name
         self._path = path
+        self._intra_op_threads = threads
 
     @property
     def onnx_path(self) -> Path:
         return self._path
+
+    @property
+    def intra_op_threads(self) -> int:
+        return self._intra_op_threads
 
     def encode(self, image: Image.Image) -> np.ndarray:
         """Закодировать одно изображение → вектор формы (1, EMBED_DIM) float32."""
