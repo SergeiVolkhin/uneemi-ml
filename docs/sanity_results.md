@@ -1,4 +1,4 @@
-﻿# Quality Sanity Results — SigLIP 2 ONNX
+# Quality Sanity Results — SigLIP 2 ONNX
 
 История прогонов quality-бенчмарков (ImageNet zs + XM3600 RU). Каждая секция — отдельный запуск sanity-скриптов (`scripts/sanity_imagenet.py`, `scripts/sanity_xm3600_ru.py`). Новые секции аппендятся в конец.
 
@@ -170,3 +170,47 @@ def normalize_for_siglip2(text: str) -> str:
 - **Гэп от paper:** −0.62 п.п. — объясняется resolution-delta (≈ −1 п.п.) + статистикой N=5000
 
 Sanity-проверка на ImageNet zero-shot **пройдена**. Наш ONNX pipeline воспроизводит paper-уровень качества при условии правильной токенизации текста.
+
+---
+
+## XM3600 RU · Прогон 2026-05-27 22:05:35
+
+**Commit:** `e1543c8`
+**Subset:** 3600 изображений, 7200 RU captions
+**Text preprocess:** `Siglip2Tokenizer + normalize_for_siglip2` (тот же фикс, что закрыл ImageNet sanity)
+
+### Метрики (zero-shot retrieval)
+
+- Image→Text R@1: **78.53%** | R@5: 95.42%
+- Text→Image R@1: **69.11%** | R@5: 90.61%
+- **avg R@1: 73.82%** | avg R@5: 93.01%
+
+### Таргеты
+
+- Pass (avg R@1 ≥ 35%): **PASS**
+- Catastrophic guard (avg R@1 ≥ 15%): **PASS**
+- Parity: intentionally omitted (см. «Caveat по parity» ниже)
+
+### Evaluation protocol (XM3600 RU)
+
+- **Pool sizes:** 3600 изображений × 7200 RU captions (avg 2.0 captions/image)
+- **Similarity:** cosine на L2-normalized fp32 embeddings (image: наш ONNX, text: PyTorch Siglip2Tokenizer + normalize_for_siglip2)
+- **Image→Text R@K:** any-hit — для каждого изображения hit, если ≥1 из его GT-captions попал в top-K по cosine similarity
+- **Text→Image R@K:** per-caption hit — для каждого caption hit, если соответствующее GT-image попало в top-K
+- **Source of convention:** стандартный протокол `clip_benchmark`/`big_vision` для XM3600 evaluation
+
+### Caveat по parity
+
+Paper SigLIP 2 (arxiv:2502.14786) публикует только avg R@1 по 36 языкам XM3600 (= 40.7% для siglip2-base-patch16-224), без per-language breakdown. Crossmodal-3600 original paper (arxiv:2205.12522) также не публикует formal evaluation protocol. Community-репортов с RU-specific цифрами не найдено (HF discussions, big_vision issues, immich, openclip benchmarks).
+
+Поэтому parity-таргет для RU установить нельзя — нет reference. Наш результат R@1 73.82% (avg i2t/t2i) корректно оформляется как **first reproducible open-source measurement** для RU split. Используется только Pass-gate (≥35%) + Catastrophic guard (<15%).
+
+Косвенное обоснование, почему RU >> paper avg 40.7%: RU — high-resource язык в WebLI training corpus, paper avg тянут вниз low-resource языки (te, mi, sw и др.).
+
+### Итог по таргетам XM3600 RU
+
+- **Pass:** `avg R@1 ≥ 35%` — **PASS (73.82%, +38.82 п.п. над gate)**
+- **Catastrophic guard:** `avg R@1 ≥ 15%` — **PASS**
+- **Parity:** intentionally omitted — нет RU reference в paper / community
+
+Sanity-проверка на XM3600 RU retrieval **пройдена**. ONNX pipeline корректно работает на multilingual retrieval для high-resource русского.
